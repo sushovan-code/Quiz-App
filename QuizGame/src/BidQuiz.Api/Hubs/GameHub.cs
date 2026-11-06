@@ -1,32 +1,70 @@
-using BidQuiz.Api.Domain;
-using BidQuiz.Api.Game;
+using BidQuiz.Application.Abstractions.Presence;
+using BidQuiz.Application.Abstractions.Realtime;
+using BidQuiz.Application.Auth;
+using BidQuiz.Application.Auth.AdminLogin;
+using BidQuiz.Application.Auth.JoinTeam;
+using BidQuiz.Application.Auth.ResumeAdmin;
+using BidQuiz.Application.Auth.ResumeTeam;
+using BidQuiz.Application.Bids;
+using BidQuiz.Application.Bids.JudgeBid;
+using BidQuiz.Application.Bids.SubmitBid;
+using BidQuiz.Application.Common;
+using BidQuiz.Application.Game.ResetGame;
+using BidQuiz.Application.Game.RevealAnswer;
+using BidQuiz.Application.Game.RevealBids;
+using BidQuiz.Application.Game.StartQuestion;
+using BidQuiz.Application.Setup;
+using BidQuiz.Application.Setup.AddQuestion;
+using BidQuiz.Application.Setup.AddTeam;
+using BidQuiz.Application.Setup.DeleteQuestion;
+using BidQuiz.Application.Setup.DeleteTeam;
+using BidQuiz.Application.Setup.DrawQuestions;
+using BidQuiz.Application.Setup.GetSetup;
+using BidQuiz.Application.Setup.SetQuestionsPerGame;
+using BidQuiz.Application.Setup.SetTeamsPerGame;
+using BidQuiz.Application.Setup.UpdateQuestion;
+using BidQuiz.Application.Setup.UpdateTeam;
+using BidQuiz.Application.Snapshots;
+using BidQuiz.Application.Snapshots.GetAdminSnapshot;
+using BidQuiz.Application.Snapshots.GetTeamSnapshot;
+using BidQuiz.Domain.Bids;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BidQuiz.Api.Hubs;
 
+/// <summary>
+/// The game's realtime API. It decides who is calling, then hands the call to a use case.
+/// Method names are the contract with the client, so renaming one is a breaking change.
+/// Use cases are injected per method so the hub stays thin.
+/// </summary>
 public sealed class GameHub(
-    IGameService game,
-    IAuthService auth,
-    ISetupService setup,
-    IPresence presence,
-    IGameNotifier notifier) : Hub
+    ITeamPresence presence,
+    IGameNotifier notifier,
+    GetTeamSnapshotHandler teamSnapshots,
+    GetAdminSnapshotHandler adminSnapshots) : Hub
 {
+    public const string Path = "/hubs/game";
     public const string AdminGroup = "admin";
     public const string TeamsGroup = "teams";
 
     private const string TeamIdKey = "teamId";
     private const string IsAdminKey = "isAdmin";
 
-    public async Task<TeamSession> JoinTeam(int teamId, string password)
+    private CancellationToken Aborted => Context.ConnectionAborted;
+
+    /// <summary>Logs this device in as a team.</summary>
+    public async Task<TeamSessionResponse> JoinTeam(int teamId, string password, [FromServices] JoinTeamHandler handler)
     {
-        var (id, token) = await auth.LoginTeamAsync(teamId, password);
-        return new TeamSession(token, await AttachTeamAsync(id));
+        var credentials = (await handler.HandleAsync(new JoinTeam(teamId, password), Aborted)).ValueOrThrow();
+        return new TeamSessionResponse(credentials.Token, await AttachTeamAsync(credentials.TeamId));
     }
 
-    public async Task<TeamSession> ResumeTeam(string token)
+    /// <summary>Resumes a team session after a refresh or reconnect, with no password.</summary>
+    public async Task<TeamSessionResponse> ResumeTeam(string token, [FromServices] ResumeTeamHandler handler)
     {
-        var teamId = await auth.ResolveTeamTokenAsync(token);
-        return new TeamSession(token, await AttachTeamAsync(teamId));
+        var teamId = (await handler.HandleAsync(new ResumeTeam(token), Aborted)).ValueOrThrow();
+        return new TeamSessionResponse(token, await AttachTeamAsync(teamId));
     }
 
     /// <summary>Logs this device out. The team stays online if another of its devices is connected.</summary>
@@ -34,119 +72,122 @@ public sealed class GameHub(
     {
         await ReleasePresenceAsync();
         Context.Items.Remove(TeamIdKey);
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, TeamsGroup);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, TeamsGroup, Aborted);
     }
 
-    public async Task<AdminSession> AdminLogin(string password)
+    public async Task<AdminSessionResponse> AdminLogin(string password, [FromServices] AdminLoginHandler handler)
     {
-        var token = auth.LoginAdmin(password);
-        return new AdminSession(token, await AttachAdminAsync());
+        var token = handler.Handle(new AdminLogin(password)).ValueOrThrow();
+        return new AdminSessionResponse(token, await AttachAdminAsync());
     }
 
-    public async Task<AdminSession> ResumeAdmin(string token)
+    public async Task<AdminSessionResponse> ResumeAdmin(string token, [FromServices] ResumeAdminHandler handler)
     {
-        auth.ValidateAdminToken(token);
-        return new AdminSession(token, await AttachAdminAsync());
+        handler.Handle(new ResumeAdmin(token)).ThrowIfFailed();
+        return new AdminSessionResponse(token, await AttachAdminAsync());
     }
 
-    public Task StartQuestion(int questionId)
+    public async Task StartQuestion(int questionId, [FromServices] StartQuestionHandler handler)
     {
         RequireAdmin();
-        return game.StartQuestionAsync(questionId);
+        (await handler.HandleAsync(new StartQuestion(questionId), Aborted)).ThrowIfFailed();
     }
 
-    public Task<MyBidDto> SubmitBid(string answer, int amount)
+    public async Task<MyBidResponse> SubmitBid(string answer, int amount, [FromServices] SubmitBidHandler handler)
     {
         if (Context.Items[TeamIdKey] is not int teamId)
         {
-            throw new GameRuleException("Please log in with your team first.");
+            throw AuthErrors.TeamLoginRequired.ToHubException();
         }
 
-        return game.SubmitBidAsync(teamId, answer, amount);
+        return (await handler.HandleAsync(new SubmitBid(teamId, answer, amount), Aborted)).ValueOrThrow();
     }
 
-    public Task RevealBids()
+    public async Task RevealBids([FromServices] RevealBidsHandler handler)
     {
         RequireAdmin();
-        return game.RevealBidsAsync();
+        (await handler.HandleAsync(Aborted)).ThrowIfFailed();
     }
 
-    public Task RevealAnswer()
+    public async Task RevealAnswer([FromServices] RevealAnswerHandler handler)
     {
         RequireAdmin();
-        return game.RevealAnswerAsync();
+        (await handler.HandleAsync(Aborted)).ThrowIfFailed();
     }
 
-    public Task<BidDto> Judge(int bidId, Verdict verdict)
+    public async Task<BidResponse> Judge(int bidId, Verdict verdict, [FromServices] JudgeBidHandler handler)
     {
         RequireAdmin();
-        return game.JudgeAsync(bidId, verdict);
+        return (await handler.HandleAsync(new JudgeBid(bidId, verdict), Aborted)).ValueOrThrow();
     }
 
-    public Task ResetGame()
+    public Task ResetGame([FromServices] ResetGameHandler handler)
     {
         RequireAdmin();
-        return game.ResetGameAsync();
+        return handler.HandleAsync(Aborted);
     }
 
-    public Task<SetupDto> GetSetup()
+    public Task<SetupResponse> GetSetup([FromServices] GetSetupHandler handler)
     {
         RequireAdmin();
-        return setup.ReadAsync();
+        return handler.HandleAsync(Aborted);
     }
 
-    public Task<SetupDto> AddTeam(TeamInput input)
+    public async Task<SetupResponse> AddTeam(SaveTeamRequest input, [FromServices] AddTeamHandler handler)
     {
         RequireAdmin();
-        return setup.AddTeamAsync(input);
+        return (await handler.HandleAsync(new AddTeam(input), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> UpdateTeam(int teamId, TeamInput input)
+    public async Task<SetupResponse> UpdateTeam(int teamId, SaveTeamRequest input, [FromServices] UpdateTeamHandler handler)
     {
         RequireAdmin();
-        return setup.UpdateTeamAsync(teamId, input);
+        return (await handler.HandleAsync(new UpdateTeam(teamId, input), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> DeleteTeam(int teamId)
+    public async Task<SetupResponse> DeleteTeam(int teamId, [FromServices] DeleteTeamHandler handler)
     {
         RequireAdmin();
-        return setup.DeleteTeamAsync(teamId);
+        return (await handler.HandleAsync(new DeleteTeam(teamId), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> AddQuestion(QuestionInput input)
+    public async Task<SetupResponse> AddQuestion(SaveQuestionRequest input, [FromServices] AddQuestionHandler handler)
     {
         RequireAdmin();
-        return setup.AddQuestionAsync(input);
+        return (await handler.HandleAsync(new AddQuestion(input), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> UpdateQuestion(int questionId, QuestionInput input)
+    public async Task<SetupResponse> UpdateQuestion(
+        int questionId,
+        SaveQuestionRequest input,
+        [FromServices] UpdateQuestionHandler handler)
     {
         RequireAdmin();
-        return setup.UpdateQuestionAsync(questionId, input);
+        return (await handler.HandleAsync(new UpdateQuestion(questionId, input), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> DeleteQuestion(int questionId)
+    public async Task<SetupResponse> DeleteQuestion(int questionId, [FromServices] DeleteQuestionHandler handler)
     {
         RequireAdmin();
-        return setup.DeleteQuestionAsync(questionId);
+        return (await handler.HandleAsync(new DeleteQuestion(questionId), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> SetQuestionsPerGame(int count)
+    public async Task<SetupResponse> SetQuestionsPerGame(int count, [FromServices] SetQuestionsPerGameHandler handler)
     {
         RequireAdmin();
-        return setup.SetQuestionsPerGameAsync(count);
+        return (await handler.HandleAsync(new SetQuestionsPerGame(count), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> SetTeamsPerGame(int count)
+    public async Task<SetupResponse> SetTeamsPerGame(int count, [FromServices] SetTeamsPerGameHandler handler)
     {
         RequireAdmin();
-        return setup.SetTeamsPerGameAsync(count);
+        return (await handler.HandleAsync(new SetTeamsPerGame(count), Aborted)).ValueOrThrow();
     }
 
-    public Task<SetupDto> DrawQuestions()
+    public async Task<SetupResponse> DrawQuestions([FromServices] DrawQuestionsHandler handler)
     {
         RequireAdmin();
-        return setup.DrawQuestionsAsync();
+        return (await handler.HandleAsync(Aborted)).ValueOrThrow();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -155,40 +196,41 @@ public sealed class GameHub(
         await base.OnDisconnectedAsync(exception);
     }
 
+    /// <summary>The admin flag is set on the connection at login, so a client can't claim it.</summary>
     private void RequireAdmin()
     {
         if (Context.Items[IsAdminKey] is not true)
         {
-            throw new GameRuleException("Admin only.");
+            throw AuthErrors.AdminOnly.ToHubException();
         }
     }
 
-    private async Task<TeamSnapshot> AttachTeamAsync(int teamId)
+    private async Task<TeamSnapshotResponse> AttachTeamAsync(int teamId)
     {
         await ReleasePresenceAsync();
         Context.Items[TeamIdKey] = teamId;
-        await Groups.AddToGroupAsync(Context.ConnectionId, TeamsGroup);
+        await Groups.AddToGroupAsync(Context.ConnectionId, TeamsGroup, Aborted);
 
         if (presence.Add(Context.ConnectionId, teamId))
         {
-            await notifier.TeamPresenceChangedAsync(teamId, true);
+            await notifier.TeamPresenceChangedAsync(teamId, true, AfterCommit.Token);
         }
 
-        return await game.GetTeamSnapshotAsync(teamId);
+        return await teamSnapshots.HandleAsync(new GetTeamSnapshot(teamId), Aborted);
     }
 
-    private async Task<AdminSnapshot> AttachAdminAsync()
+    private async Task<AdminSnapshotResponse> AttachAdminAsync()
     {
         Context.Items[IsAdminKey] = true;
-        await Groups.AddToGroupAsync(Context.ConnectionId, AdminGroup);
-        return await game.GetAdminSnapshotAsync();
+        await Groups.AddToGroupAsync(Context.ConnectionId, AdminGroup, Aborted);
+        return await adminSnapshots.HandleAsync(Aborted);
     }
 
     private async Task ReleasePresenceAsync()
     {
         if (presence.Remove(Context.ConnectionId) is { } offlineTeamId)
         {
-            await notifier.TeamPresenceChangedAsync(offlineTeamId, false);
+            await notifier.TeamPresenceChangedAsync(offlineTeamId, false, AfterCommit.Token);
         }
     }
 }

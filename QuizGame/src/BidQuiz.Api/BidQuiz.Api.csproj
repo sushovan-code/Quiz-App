@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <!-- HTTP endpoints, the SignalR hub and the composition root. -->
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>BidQuiz.Api</RootNamespace>
     <ClientDir>$(MSBuildProjectDirectory)\..\web\bidquiz-web\</ClientDir>
     <!-- wwwroot is produced by the Angular build, so it must not be globbed at evaluation time. -->
@@ -11,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+    <ProjectReference Include="..\BidQuiz.Application\BidQuiz.Application.csproj" />
+    <ProjectReference Include="..\BidQuiz.Infrastructure\BidQuiz.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

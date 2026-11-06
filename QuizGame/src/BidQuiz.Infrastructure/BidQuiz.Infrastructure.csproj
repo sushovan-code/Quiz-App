@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adapters for the Application ports: the database, seed files, password hashing and in-process stores. -->
+  <PropertyGroup>
+    <RootNamespace>BidQuiz.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- For PasswordHasher<T> and IHostEnvironment. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BidQuiz.Application\BidQuiz.Application.csproj" />
+  </ItemGroup>
+
+</Project>
