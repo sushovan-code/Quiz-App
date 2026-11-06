@@ -67,7 +67,7 @@ public sealed class HubSecurityTests : IAsyncLifetime
     private async Task<TeamOptionResponse> FirstTeamAsync()
     {
         using var http = _factory.CreateClient();
-        var teams = await http.GetFromJsonAsync<List<TeamOptionResponse>>("/api/teams");
+        var teams = await http.GetFromJsonAsync<List<TeamOptionResponse>>("/api/v1/teams");
         return teams!.Single(t => t.Name == "The Projectionists");
     }
 
@@ -218,7 +218,7 @@ public sealed class HubSecurityTests : IAsyncLifetime
         var setup = await admin.InvokeAsync<SetupResponse>("SetTeamsPerGame", 3);
 
         Assert.Equal(3, setup.Teams.Count(t => t.Playing));
-        Assert.Equal(3, (await http.GetFromJsonAsync<List<TeamOptionResponse>>("/api/teams"))!.Count);
+        Assert.Equal(3, (await http.GetFromJsonAsync<List<TeamOptionResponse>>("/api/v1/teams"))!.Count);
         Assert.Equal(3, (await admin.InvokeAsync<AdminSessionResponse>("AdminLogin", AdminPassword)).Snapshot.Teams.Count);
 
         var benched = setup.Teams.First(t => !t.Playing);

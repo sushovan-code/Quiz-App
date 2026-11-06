@@ -1,123 +1,30 @@
-export type GameStatus = 'Idle' | 'Accepting' | 'Closed' | 'Revealed';
-export type Verdict = 'Up' | 'Down';
+import type { components } from './api/schema';
 
-export interface Question {
-  id: number;
-  order: number;
-  category: string;
-  text: string;
-  imageUrl: string | null;
-}
+/**
+ * The contract types, generated from the server's OpenAPI document (openapi.json, then
+ * `npm run generate:api`). Don't write these by hand; change the C# type and regenerate.
+ */
+type Schemas = components['schemas'];
 
-export interface QuestionSummary {
-  id: number;
-  order: number;
-  asked: boolean;
-}
+export type GameStatus = Schemas['TeamSnapshotResponse']['status'];
+export type Verdict = NonNullable<Schemas['BidResponse']['verdict']>;
 
-export interface TeamScore {
-  id: number;
-  name: string;
-  color: string;
-  bidBalance: number;
-  wallet: number;
-  canBid: boolean;
-  online: boolean;
-}
-
-export interface TeamOption {
-  id: number;
-  name: string;
-}
-
-export interface BidView {
-  id: number;
-  teamId: number;
-  teamName: string;
-  teamColor: string;
-  answer: string;
-  amount: number;
-  verdict: Verdict | null;
-}
-
-export interface MyBid {
-  answer: string;
-  amount: number;
-}
-
-export interface TeamSnapshot {
-  teamId: number;
-  status: GameStatus;
-  question: Question | null;
-  endsAtUtc: string | null;
-  serverNowUtc: string;
-  myBid: MyBid | null;
-  teams: TeamScore[];
-}
-
-export interface AdminSnapshot {
-  status: GameStatus;
-  question: Question | null;
-  endsAtUtc: string | null;
-  serverNowUtc: string;
-  answeredCount: number;
-  teamCount: number;
-  questions: QuestionSummary[];
-  teams: TeamScore[];
-  bids: BidView[] | null;
-  correctAnswer: string | null;
-}
-
-export interface TeamSession {
-  token: string;
-  snapshot: TeamSnapshot;
-}
-
-export interface AdminSession {
-  token: string;
-  snapshot: AdminSnapshot;
-}
-
-export interface ClientConfig {
-  joinUrl: string;
-  bidStep: number;
-  questionSeconds: number;
-}
-
-export interface TeamInput {
-  name: string;
-  password: string | null;
-}
-
-export interface QuestionInput {
-  category: string;
-  text: string;
-  correctAnswer: string;
-  imageUrl: string | null;
-}
-
-export interface TeamSetup {
-  id: number;
-  name: string;
-  color: string;
-  playing: boolean;
-}
-
-export interface QuestionSetup extends QuestionInput {
-  id: number;
-  order: number | null;
-}
-
-export interface Setup {
-  teams: TeamSetup[];
-  questions: QuestionSetup[];
-  questionsPerGame: number;
-  teamsPerGame: number;
-  maxTeams: number;
-  minQuestionsPerGame: number;
-  maxQuestionsPerGame: number;
-  locked: boolean;
-}
+export type Question = Schemas['QuestionResponse'];
+export type QuestionSummary = Schemas['QuestionSummaryResponse'];
+export type TeamScore = Schemas['TeamScoreResponse'];
+export type TeamOption = Schemas['TeamOptionResponse'];
+export type BidView = Schemas['BidResponse'];
+export type MyBid = Schemas['MyBidResponse'];
+export type TeamSnapshot = Schemas['TeamSnapshotResponse'];
+export type AdminSnapshot = Schemas['AdminSnapshotResponse'];
+export type TeamSession = Schemas['TeamSessionResponse'];
+export type AdminSession = Schemas['AdminSessionResponse'];
+export type ClientConfig = Schemas['ClientConfigResponse'];
+export type TeamInput = Schemas['SaveTeamRequest'];
+export type QuestionInput = Schemas['SaveQuestionRequest'];
+export type TeamSetup = Schemas['TeamSetupResponse'];
+export type QuestionSetup = Schemas['QuestionSetupResponse'];
+export type Setup = Schemas['SetupResponse'];
 
 /** Everything the server pushes. */
 export interface ServerEvents {

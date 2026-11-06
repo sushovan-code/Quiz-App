@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { ApiService } from '../core/api.service';
+import { GAME_API } from '../core/game-api';
 
 @Component({
   selector: 'app-join-qr',
@@ -52,7 +52,7 @@ import { ApiService } from '../core/api.service';
   `,
 })
 export class JoinQr {
-  private readonly api = inject(ApiService);
+  private readonly api = inject(GAME_API);
 
   protected readonly joinUrl = computed(() => this.api.config()?.joinUrl);
   protected readonly displayUrl = computed(() => this.joinUrl()?.replace(/^https?:\/\//, ''));

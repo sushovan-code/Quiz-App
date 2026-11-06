@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { ApiService } from '../core/api.service';
+import { GAME_API } from '../core/game-api';
 import { CountdownRing } from '../shared/countdown-ring';
 import { HostStore } from './host.store';
 
@@ -82,7 +82,7 @@ import { HostStore } from './host.store';
 })
 export class QuestionStage {
   protected readonly store = inject(HostStore);
-  private readonly api = inject(ApiService);
+  private readonly api = inject(GAME_API);
 
   protected readonly totalSeconds = computed(() => this.api.config()?.questionSeconds ?? 30);
 }

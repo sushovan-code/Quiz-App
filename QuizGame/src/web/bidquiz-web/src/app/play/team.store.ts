@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { ApiService } from '../core/api.service';
+import { GAME_API } from '../core/game-api';
 import { Countdown } from '../core/countdown';
 import { GameConnection, errorMessage, isSessionExpired } from '../core/game-connection';
 import { MyBid, Question, TeamOption, TeamScore, TeamSession, TeamSnapshot } from '../core/models';
@@ -11,7 +11,7 @@ export type PlayView = 'restoring' | 'login' | 'waiting' | 'question' | 'confirm
 @Injectable({ providedIn: 'root' })
 export class TeamStore {
   private readonly hub = inject(GameConnection);
-  private readonly api = inject(ApiService);
+  private readonly api = inject(GAME_API);
 
   readonly countdown = new Countdown();
 

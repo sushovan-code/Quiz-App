@@ -18,10 +18,12 @@
     <ClientInputs Include="$(ClientDir)src\**\*;$(ClientDir)angular.json;$(ClientDir)package.json;$(ClientDir)package-lock.json;$(ClientDir)tsconfig*.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+  </ItemGroup>
+
   <!-- Keeps `dotnet run` a single command. Pass -p:SkipClientBuild=true to build the API alone. -->
-  <Target Name="BuildClient" BeforeTargets="BeforeBuild"
-          Condition="'$(SkipClientBuild)' != 'true' And Exists('$(ClientDir)package.json')"
-          Inputs="@(ClientInputs)" Outputs="wwwroot\index.html">
+  <Target Name="BuildClient" BeforeTargets="BeforeBuild" Condition="'$(SkipClientBuild)' != 'true' And Exists('$(ClientDir)package.json')" Inputs="@(ClientInputs)" Outputs="wwwroot\index.html">
     <Exec Command="npm ci" WorkingDirectory="$(ClientDir)" Condition="!Exists('$(ClientDir)node_modules')" />
     <Exec Command="npx ng build" WorkingDirectory="$(ClientDir)" />
   </Target>

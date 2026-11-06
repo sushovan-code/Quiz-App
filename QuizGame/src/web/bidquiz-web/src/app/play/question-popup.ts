@@ -1,6 +1,6 @@
 import { Component, computed, inject, linkedSignal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ApiService } from '../core/api.service';
+import { GAME_API } from '../core/game-api';
 import { CountdownRing } from '../shared/countdown-ring';
 import { TeamStore } from './team.store';
 
@@ -109,7 +109,7 @@ import { TeamStore } from './team.store';
 })
 export class QuestionPopup {
   protected readonly store = inject(TeamStore);
-  private readonly api = inject(ApiService);
+  private readonly api = inject(GAME_API);
 
   /** Prefilled from the existing bid when a team changes their answer. */
   protected readonly answer = linkedSignal(() => this.store.myBid()?.answer ?? '');
