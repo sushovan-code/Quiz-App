@@ -437,6 +437,7 @@ Calls the client makes (`GameHub`). The hub checks the caller, then passes the w
 |---|---|
 | `JoinTeam`, `ResumeTeam`, `AdminLogin`, `ResumeAdmin` | Anyone. They need a password or token |
 | `LeaveTeam` | Anyone. It only affects the caller's own connection |
+| `AdminLogout` | Anyone. It only affects the caller's own connection and the token they hold |
 | `SubmitBid` | A logged-in team. The team comes from the connection, not from the message, so one team can't bid as another |
 | `StartQuestion`, `RevealBids`, `RevealAnswer`, `Judge`, `ResetGame` | Admin |
 | `GetSetup`, `AddTeam`, `UpdateTeam`, `DeleteTeam`, `AddQuestion`, `UpdateQuestion`, `DeleteQuestion`, `SetQuestionsPerGame`, `SetTeamsPerGame`, `DrawQuestions` | Admin |
@@ -527,6 +528,8 @@ The colour comes from `Team.Color` in the database, through `TeamScoreDto.Color`
 The token is kept in `localStorage`, so after a refresh or dropped connection the device calls `ResumeTeam(token)` and needs no password. The host works the same way, except that admin tokens are kept in memory, so the host must log in again after a server restart.
 
 **Logging out.** **Log out** deletes the token from that device and calls `LeaveTeam`. The server stops treating the connection as that team, removes it from the `teams` group and forgets it in `PresenceTracker`. If that was the team's last device, everyone receives `TeamPresenceChanged(teamId, false)` and the dot on the leaderboard goes dark. If another device is still logged in as that team, it stays online. Any bid already placed still stands.
+
+**Quitting the host screen.** **Quit** (beside **Reset game**) asks for confirmation, then deletes the admin token from the browser, calls `AdminLogout(token)` and leaves fullscreen. The server revokes the token, stops treating the connection as admin and removes it from the `admin` group. The game itself is untouched: a running question keeps its timer, and scores and teams stay as they are. Logging in again picks up where the show left off.
 
 ### 4. Asking a question
 

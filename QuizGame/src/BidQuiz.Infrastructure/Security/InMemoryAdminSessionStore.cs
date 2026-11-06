@@ -11,4 +11,6 @@ public sealed class InMemoryAdminSessionStore : IAdminSessionStore
     public void Add(string sessionToken) => _tokens[sessionToken] = 0;
 
     public bool Contains(string sessionToken) => _tokens.ContainsKey(sessionToken);
+
+    public void Remove(string sessionToken) => _tokens.TryRemove(sessionToken, out _);
 }

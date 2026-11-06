@@ -47,6 +47,7 @@ export interface ServerMethods {
   LeaveTeam: () => void;
   AdminLogin: (password: string) => AdminSession;
   ResumeAdmin: (token: string) => AdminSession;
+  AdminLogout: (token: string) => void;
   StartQuestion: (questionId: number) => void;
   SubmitBid: (answer: string, amount: number) => MyBid;
   RevealBids: () => void;

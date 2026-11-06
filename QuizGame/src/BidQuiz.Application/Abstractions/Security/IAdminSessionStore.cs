@@ -6,4 +6,7 @@ public interface IAdminSessionStore
     void Add(string sessionToken);
 
     bool Contains(string sessionToken);
+
+    /// <summary>Revokes a token. Unknown tokens are ignored.</summary>
+    void Remove(string sessionToken);
 }

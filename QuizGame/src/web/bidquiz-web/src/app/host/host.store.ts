@@ -124,6 +124,23 @@ export class HostStore {
     return this.run(() => this.hub.invoke('ResetGame'));
   }
 
+  /** Logs the host out. The game carries on untouched, so logging in again resumes the show. */
+  logout(): void {
+    const token = localStorage.getItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    this.authenticated.set(false);
+    this.showStarted.set(false);
+    this.error.set(null);
+    this.closeDialog();
+    this.countdown.clear();
+
+    // Best effort: if the connection is down, the token is already gone from this browser,
+    // and the server forgets it on restart.
+    if (token !== null) {
+      void this.hub.invoke('AdminLogout', token).catch(() => undefined);
+    }
+  }
+
   private async run(action: () => Promise<unknown>): Promise<void> {
     this.error.set(null);
     try {

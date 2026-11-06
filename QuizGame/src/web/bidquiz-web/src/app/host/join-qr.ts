@@ -11,7 +11,10 @@ import { GAME_API } from '../core/game-api';
         [qrdata]="url"
         [width]="200"
         [margin]="1"
-        errorCorrectionLevel="M"
+        [imageSrc]="iconSrc"
+        [imageWidth]="iconSize"
+        [imageHeight]="iconSize"
+        errorCorrectionLevel="H"
         colorDark="#0A0505"
         colorLight="#F5E6C8"
       />
@@ -53,6 +56,10 @@ import { GAME_API } from '../core/game-api';
 })
 export class JoinQr {
   private readonly api = inject(GAME_API);
+
+  /** Covers about 5% of the code. Error correction H recovers up to 30%, so it still scans. */
+  protected readonly iconSrc = '/qr-clapperboard.svg';
+  protected readonly iconSize = 44;
 
   protected readonly joinUrl = computed(() => this.api.config()?.joinUrl);
   protected readonly displayUrl = computed(() => this.joinUrl()?.replace(/^https?:\/\//, ''));

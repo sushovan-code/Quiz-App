@@ -30,6 +30,7 @@ import { RevealDialog } from './reveal-dialog';
         <div class="links">
           <a class="reset" routerLink="/host/setup">Setup</a>
           <button class="reset" (click)="confirmingReset.set(true)">Reset game</button>
+          <button class="reset" (click)="confirmingQuit.set(true)">Quit</button>
         </div>
       </section>
 
@@ -54,6 +55,14 @@ import { RevealDialog } from './reveal-dialog';
         confirmLabel="Reset game"
         (confirmed)="resetGame()"
         (cancelled)="confirmingReset.set(false)"
+      />
+    }
+    @if (confirmingQuit()) {
+      <app-confirm-dialog
+        message="Quit the show? You'll be logged out. The game, scores and teams stay as they are, and logging in again picks up where you left off."
+        confirmLabel="Quit"
+        (confirmed)="quit()"
+        (cancelled)="confirmingQuit.set(false)"
       />
     }
   `,
@@ -133,9 +142,18 @@ import { RevealDialog } from './reveal-dialog';
 export class HostShell {
   protected readonly store = inject(HostStore);
   protected readonly confirmingReset = signal(false);
+  protected readonly confirmingQuit = signal(false);
 
   protected async resetGame(): Promise<void> {
     this.confirmingReset.set(false);
     await this.store.resetGame();
+  }
+
+  protected async quit(): Promise<void> {
+    this.confirmingQuit.set(false);
+    this.store.logout();
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => undefined);
+    }
   }
 }
