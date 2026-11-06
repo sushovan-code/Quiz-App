@@ -3,6 +3,7 @@
   <!-- HTTP endpoints, the SignalR hub and the composition root. -->
   <PropertyGroup>
     <RootNamespace>BidQuiz.Api</RootNamespace>
+    <UserSecretsId>bidquiz-api-2f6c9a41</UserSecretsId>
     <ClientDir>$(MSBuildProjectDirectory)\..\web\bidquiz-web\</ClientDir>
     <!-- wwwroot is produced by the Angular build, so it must not be globbed at evaluation time. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\**</DefaultItemExcludes>

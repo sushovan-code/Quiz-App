@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using BidQuiz.Api;
 using BidQuiz.Api.Background;
 using BidQuiz.Api.Endpoints;
 using BidQuiz.Api.Hubs;
@@ -9,12 +10,15 @@ using BidQuiz.Application.Abstractions.Realtime;
 using BidQuiz.Application.Game.InitializeGame;
 using BidQuiz.Application.Options;
 using BidQuiz.Infrastructure;
+using BidQuiz.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<ScoringOptions>(builder.Configuration.GetSection(ScoringOptions.SectionName));
-builder.Services.Configure<GameOptions>(builder.Configuration.GetSection(GameOptions.SectionName));
-builder.Services.Configure<NetworkOptions>(builder.Configuration.GetSection(NetworkOptions.SectionName));
+// Bad settings stop the app at startup rather than surfacing mid-show.
+builder.Services.AddValidatedOptions<ScoringOptions>(ScoringOptions.SectionName);
+builder.Services.AddValidatedOptions<GameOptions>(GameOptions.SectionName);
+builder.Services.AddValidatedOptions<NetworkOptions>(NetworkOptions.SectionName);
+builder.Services.AddValidatedOptions<DatabaseOptions>(DatabaseOptions.SectionName);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
