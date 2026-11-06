@@ -696,10 +696,19 @@ dotnet test BidQuiz.slnx -p:SkipClientBuild=true
 - `QuestionPickerTests`: random picking with no repeats
 - `GameServiceTests`: the game flow, ties, floors and changing verdicts
 - `HubSecurityTests`: the real hub end to end, including what teams may never receive, the seed data, setup limits, logout and presence, and upgrading an older database
+- `HealthEndpointTests`: `/health` and `/alive` answer in Development and aren't mapped in Production
 
 ## Develop
 
-Run `dotnet run` in `server`, and `npm start` in `client`. The Angular dev server is at `http://localhost:4200` and proxies `/api` and `/hubs` to port 5000.
+Run the API and the Angular dev server together with the Aspire dashboard (logs, traces and metrics for the API):
+
+```
+dotnet run --project src/BidQuiz.AppHost
+```
+
+(`aspire run` does the same if you have the Aspire CLI.) The console prints the dashboard link. The app is at `http://localhost:4200`, and the dev server proxies `/api`, `/openapi` and `/hubs` to the API through Aspire service discovery. Only Development maps `/health` and `/alive`, and the AppHost waits on `/health` before it starts the web app.
+
+Without Aspire, run `dotnet run --project src/BidQuiz.Api` and `npm start` in `src/web/bidquiz-web`. The proxy then targets port 5000. For a LAN show, run the API on its own as described in [Run](#run). Under Aspire it listens on localhost only.
 
 To move to SQL Server, add the `Microsoft.EntityFrameworkCore.SqlServer` package, replace `UseSqlite` in `Program.cs` and remove the SQLite directory helper in `Seeder.cs`.
 

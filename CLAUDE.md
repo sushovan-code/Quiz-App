@@ -14,22 +14,23 @@ Bid Quiz: a live bidding quiz. The host runs it on a projector laptop (`/host`),
 
 ## Standards
 
-`docs/standards/*.md` override the defaults (naming, architecture, coding, testing, security, UI theming, workflow). **The current code does not yet meet them.** It is one project with no Application/Infrastructure split, uses `GameRuleException` instead of `Result<T>`, passes no `CancellationToken`s, has no `Directory.Build.props`, doesn't use TypeScript `strict`, has no ESLint and no Aspire. These are being fixed one slice per branch. Write new code to the standards, and don't widen the existing gaps.
+`docs/standards/*.md` override the defaults (naming, architecture, coding, testing, security, UI theming, workflow). The code was brought up to them one slice per branch: the Domain/Application/Infrastructure/Api split, `Result<T>`, `CancellationToken`s, `Directory.Build.props`, TypeScript `strict`, ESLint and Aspire. Write new code to the standards.
 
 ## Commands
 
 Run these from `QuizGame/`:
 
 ```
-dotnet run --project server                       # runs the app. The first run does npm ci + ng build (about a minute)
+dotnet run --project src/BidQuiz.AppHost          # dev: API + ng serve (http://localhost:4200) + Aspire dashboard
+dotnet run --project src/BidQuiz.Api              # LAN show: API serving the built client. The first run does npm ci + ng build (about a minute)
 dotnet build BidQuiz.slnx -p:SkipClientBuild=true # builds the API only
 dotnet test BidQuiz.slnx -p:SkipClientBuild=true  # runs all tests. Skipping the client build is fine, the tests don't need it
 dotnet test BidQuiz.slnx -p:SkipClientBuild=true --filter "FullyQualifiedName~GameServiceTests.Tick_ClosesOnceAtTheDeadline"
 ```
 
-Frontend dev loop: run `dotnet run --project server` (port 5000) and `npm start` in `client/` (port 4200). `proxy.conf.json` forwards `/api` and `/hubs` (WebSockets) to port 5000. `npm run build` builds the client alone. There are no frontend tests yet.
+Frontend dev loop: the AppHost runs `npm run start:aspire` in `src/web/bidquiz-web` on port 4200, unproxied. `proxy.conf.js` forwards `/api`, `/openapi` and `/hubs` (WebSockets) to the API address from Aspire service discovery (`services__api__http__0`), or to port 5000 under plain `npm start`. `npm run build` builds the client alone. There are no frontend tests yet. `/health` and `/alive` (ServiceDefaults) are mapped in Development only.
 
-The server listens on `0.0.0.0:5000` unless `urls`/`http_ports`/`WEBSITE_SITE_NAME` is set, and prints the LAN join URL at startup. The default admin password is `change-me`, and team passwords come from `server/seed/teams.json`.
+The API listens on `0.0.0.0:5000` unless `urls`/`http_ports`/`WEBSITE_SITE_NAME` is set (Aspire sets `urls`), and logs the LAN join URL at startup. The admin password comes from user secrets (`Game:AdminPassword`), and team passwords come from `src/BidQuiz.Api/seed/teams.json`.
 
 ## Architecture (big picture)
 
