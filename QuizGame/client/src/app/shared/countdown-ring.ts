@@ -7,7 +7,12 @@ const URGENT_SECONDS = 10;
 @Component({
   selector: 'app-countdown-ring',
   template: `
-    <svg viewBox="0 0 120 120" [class.urgent]="urgent()" role="timer" [attr.aria-label]="seconds() + ' seconds left'">
+    <svg
+      viewBox="0 0 120 120"
+      [class.urgent]="urgent()"
+      role="timer"
+      [attr.aria-label]="seconds() + ' seconds left'"
+    >
       <circle class="track" cx="60" cy="60" [attr.r]="radius" />
       <circle
         class="progress"

@@ -14,7 +14,8 @@ export class GameHubService extends GameConnection {
     .withUrl('/hubs/game')
     .withAutomaticReconnect({
       // Never give up: a phone can be out of Wi-Fi range for a whole round.
-      nextRetryDelayInMilliseconds: (ctx) => Math.min(1000 * 2 ** ctx.previousRetryCount, MAX_BACKOFF_MS),
+      nextRetryDelayInMilliseconds: (ctx) =>
+        Math.min(1000 * 2 ** ctx.previousRetryCount, MAX_BACKOFF_MS),
     })
     .configureLogging(LogLevel.Warning)
     .build();

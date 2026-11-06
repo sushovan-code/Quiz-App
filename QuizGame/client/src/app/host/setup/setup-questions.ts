@@ -13,59 +13,73 @@ import { SetupStore } from './setup.store';
       <div class="count">
         <label for="per-game">Questions per game</label>
         <select
+          #perGameField
           id="per-game"
           class="field"
           [disabled]="setup().locked"
-          (change)="store.setQuestionsPerGame(+$any($event.target).value)"
+          (change)="store.setQuestionsPerGame(+perGameField.value)"
         >
           @for (option of countOptions(); track option) {
-            <option [value]="option" [selected]="option === setup().questionsPerGame">{{ option }}</option>
+            <option [value]="option" [selected]="option === setup().questionsPerGame">
+              {{ option }}
+            </option>
           }
         </select>
-        <button class="btn" [disabled]="setup().locked" (click)="store.drawQuestions()">Draw new questions</button>
+        <button class="btn" [disabled]="setup().locked" (click)="store.drawQuestions()">
+          Draw new questions
+        </button>
       </div>
-      <p>Questions are picked at random from the bank, with no repeats. Resetting the game draws a new set.</p>
+      <p>
+        Questions are picked at random from the bank, with no repeats. Resetting the game draws a
+        new set.
+      </p>
 
       <form (submit)="$event.preventDefault(); save()">
         <h3>{{ editing() ? 'Edit question' : 'Add a question' }}</h3>
         <div class="fields">
           <input
+            #categoryField
             class="field category"
             list="categories"
             placeholder="Category"
             aria-label="Category"
             maxlength="40"
             [value]="category()"
-            (input)="category.set($any($event.target).value)"
+            (input)="category.set(categoryField.value)"
           />
           <datalist id="categories">
             <option value="Hollywood"></option>
             <option value="Bollywood"></option>
           </datalist>
           <input
+            #textField
             class="field text"
             placeholder="Question"
             aria-label="Question"
             maxlength="500"
             [value]="text()"
-            (input)="text.set($any($event.target).value)"
+            (input)="text.set(textField.value)"
           />
           <input
+            #correctAnswerField
             class="field"
             placeholder="Correct answer"
             aria-label="Correct answer"
             maxlength="500"
             [value]="correctAnswer()"
-            (input)="correctAnswer.set($any($event.target).value)"
+            (input)="correctAnswer.set(correctAnswerField.value)"
           />
           <input
+            #imageUrlField
             class="field"
             placeholder="Image URL (optional)"
             aria-label="Image URL"
             [value]="imageUrl()"
-            (input)="imageUrl.set($any($event.target).value)"
+            (input)="imageUrl.set(imageUrlField.value)"
           />
-          <button class="btn" type="submit" [disabled]="!canSave()">{{ editing() ? 'Save' : 'Add question' }}</button>
+          <button class="btn" type="submit" [disabled]="!canSave()">
+            {{ editing() ? 'Save' : 'Add question' }}
+          </button>
           @if (editing()) {
             <button class="btn" type="button" (click)="clear()">Cancel</button>
           }
@@ -73,7 +87,11 @@ import { SetupStore } from './setup.store';
       </form>
 
       <label class="reveal">
-        <input type="checkbox" [checked]="answersShown()" (change)="answersShown.set(!answersShown())" />
+        <input
+          type="checkbox"
+          [checked]="answersShown()"
+          (change)="answersShown.set(!answersShown())"
+        />
         Show correct answers
       </label>
 
@@ -95,8 +113,12 @@ import { SetupStore } from './setup.store';
               <td>{{ question.text }}</td>
               <td>{{ answersShown() ? question.correctAnswer : '•••••' }}</td>
               <td class="actions">
-                <button class="link" [disabled]="setup().locked" (click)="edit(question)">Edit</button>
-                <button class="link" [disabled]="setup().locked" (click)="deleting.set(question)">Delete</button>
+                <button class="link" [disabled]="setup().locked" (click)="edit(question)">
+                  Edit
+                </button>
+                <button class="link" [disabled]="setup().locked" (click)="deleting.set(question)">
+                  Delete
+                </button>
               </td>
             </tr>
           }
@@ -273,7 +295,9 @@ export class SetupQuestions {
       correctAnswer: this.correctAnswer(),
       imageUrl: this.imageUrl() || null,
     };
-    const saved = await (question ? this.store.updateQuestion(question.id, input) : this.store.addQuestion(input));
+    const saved = await (question
+      ? this.store.updateQuestion(question.id, input)
+      : this.store.addQuestion(input));
     if (saved) {
       this.clear();
     }

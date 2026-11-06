@@ -13,24 +13,31 @@ import { SetupStore } from './setup.store';
       <div class="count">
         <label for="teams-per-game">Teams playing</label>
         <select
+          #teamsPerGameField
           id="teams-per-game"
           class="field"
           [disabled]="setup().locked"
-          (change)="store.setTeamsPerGame(+$any($event.target).value)"
+          (change)="store.setTeamsPerGame(+teamsPerGameField.value)"
         >
           @for (option of countOptions(); track option) {
-            <option [value]="option" [selected]="option === setup().teamsPerGame">{{ option }}</option>
+            <option [value]="option" [selected]="option === setup().teamsPerGame">
+              {{ option }}
+            </option>
           }
         </select>
       </div>
-      <p>The first {{ setup().teamsPerGame }} teams below play. The rest sit out and can't log in.</p>
+      <p>
+        The first {{ setup().teamsPerGame }} teams below play. The rest sit out and can't log in.
+      </p>
 
       <ul>
         @for (team of setup().teams; track team.id) {
           <li [class.benched]="!team.playing" [style.--team-color]="team.color">
             <span class="name">{{ team.name }}</span>
             <button class="link" [disabled]="setup().locked" (click)="edit(team)">Edit</button>
-            <button class="link" [disabled]="setup().locked" (click)="deleting.set(team)">Delete</button>
+            <button class="link" [disabled]="setup().locked" (click)="deleting.set(team)">
+              Delete
+            </button>
           </li>
         }
       </ul>
@@ -39,23 +46,27 @@ import { SetupStore } from './setup.store';
         <h3>{{ editing() ? 'Edit ' + editing()?.name : 'Add a team' }}</h3>
         <div class="row">
           <input
+            #nameField
             class="field"
             placeholder="Team name"
             aria-label="Team name"
             maxlength="40"
             [value]="name()"
-            (input)="name.set($any($event.target).value)"
+            (input)="name.set(nameField.value)"
           />
           <input
+            #passwordField
             class="field"
             type="text"
             autocomplete="off"
             aria-label="Team password"
             [placeholder]="editing() ? 'New password (optional)' : 'Team password'"
             [value]="password()"
-            (input)="password.set($any($event.target).value)"
+            (input)="password.set(passwordField.value)"
           />
-          <button class="btn" type="submit" [disabled]="!canSave()">{{ editing() ? 'Save' : 'Add team' }}</button>
+          <button class="btn" type="submit" [disabled]="!canSave()">
+            {{ editing() ? 'Save' : 'Add team' }}
+          </button>
           @if (editing()) {
             <button class="btn" type="button" (click)="clear()">Cancel</button>
           }

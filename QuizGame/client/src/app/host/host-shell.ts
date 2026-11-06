@@ -10,13 +10,23 @@ import { RevealDialog } from './reveal-dialog';
 
 @Component({
   selector: 'app-host-shell',
-  imports: [ConfirmDialog, JoinQr, Leaderboard, QuestionGrid, QuestionStage, RevealDialog, RouterLink],
+  imports: [
+    ConfirmDialog,
+    JoinQr,
+    Leaderboard,
+    QuestionGrid,
+    QuestionStage,
+    RevealDialog,
+    RouterLink,
+  ],
   template: `
     <main class="stage">
       <section class="left">
         <app-join-qr />
         <app-question-grid />
-        <button class="btn reveal" [disabled]="!store.canReveal()" (click)="store.revealBids()">Reveal bids</button>
+        <button class="btn reveal" [disabled]="!store.canReveal()" (click)="store.revealBids()">
+          Reveal bids
+        </button>
         <div class="links">
           <a class="reset" routerLink="/host/setup">Setup</a>
           <button class="reset" (click)="confirmingReset.set(true)">Reset game</button>

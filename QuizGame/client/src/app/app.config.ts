@@ -9,5 +9,5 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     { provide: GameConnection, useClass: GameHubService },
-  ]
+  ],
 };

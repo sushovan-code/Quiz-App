@@ -22,7 +22,10 @@ import { SetupTeams } from './setup-teams';
           <h1>Show setup</h1>
         </header>
         @if (setup.locked) {
-          <p class="locked">A game is in progress. Use <strong>Reset game</strong> on the host screen to change the setup.</p>
+          <p class="locked">
+            A game is in progress. Use <strong>Reset game</strong> on the host screen to change the
+            setup.
+          </p>
         }
         @if (store.error(); as error) {
           <p class="error">{{ error }}</p>

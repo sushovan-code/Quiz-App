@@ -24,19 +24,24 @@ import { TeamStore } from './team.store';
 
           <label for="answer">Your answer</label>
           <input
+            #answerField
             id="answer"
             class="field"
             maxlength="500"
             autocomplete="off"
             [value]="answer()"
-            (input)="answer.set($any($event.target).value)"
+            (input)="answer.set(answerField.value)"
           />
 
           @if (store.bidOptions().length) {
-            <label for="bid">Your bid (Bid Balance {{ store.me()?.bidBalance | number: '1.0-0' }})</label>
-            <select id="bid" class="field" (change)="bid.set(+$any($event.target).value)">
+            <label for="bid"
+              >Your bid (Bid Balance {{ store.me()?.bidBalance | number: '1.0-0' }})</label
+            >
+            <select #bidField id="bid" class="field" (change)="bid.set(+bidField.value)">
               @for (option of store.bidOptions(); track option) {
-                <option [value]="option" [selected]="option === bid()">{{ option | number: '1.0-0' }}</option>
+                <option [value]="option" [selected]="option === bid()">
+                  {{ option | number: '1.0-0' }}
+                </option>
               }
             </select>
             <button class="btn" type="submit" [disabled]="!canSubmit()">Submit</button>
@@ -108,7 +113,9 @@ export class QuestionPopup {
 
   /** Prefilled from the existing bid when a team changes their answer. */
   protected readonly answer = linkedSignal(() => this.store.myBid()?.answer ?? '');
-  protected readonly bid = linkedSignal(() => this.store.myBid()?.amount ?? this.store.bidOptions()[0] ?? 0);
+  protected readonly bid = linkedSignal(
+    () => this.store.myBid()?.amount ?? this.store.bidOptions()[0] ?? 0,
+  );
 
   protected readonly totalSeconds = computed(() => this.api.config()?.questionSeconds ?? 30);
   protected readonly canSubmit = computed(

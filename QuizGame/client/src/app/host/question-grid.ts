@@ -44,7 +44,9 @@ import { HostStore } from './host.store';
       cursor: pointer;
       font-family: var(--heading-font);
       font-size: clamp(1rem, 1.5vw, 2rem);
-      transition: box-shadow 150ms, transform 150ms;
+      transition:
+        box-shadow 150ms,
+        transform 150ms;
 
       &:hover:not(:disabled) {
         box-shadow: var(--gold-glow);

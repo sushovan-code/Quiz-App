@@ -46,7 +46,9 @@ export class HostStore {
     this.hub.on('QuestionStarted', (question, endsAtUtc, serverNowUtc) => {
       this.status.set('Accepting');
       this.question.set(question);
-      this.questions.update((all) => all.map((q) => (q.id === question.id ? { ...q, asked: true } : q)));
+      this.questions.update((all) =>
+        all.map((q) => (q.id === question.id ? { ...q, asked: true } : q)),
+      );
       this.closeDialog();
       this.countdown.start(endsAtUtc, serverNowUtc);
     });

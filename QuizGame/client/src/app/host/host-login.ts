@@ -8,15 +8,19 @@ import { HostStore } from './host.store';
       <h1>Bid Quiz</h1>
       <form class="panel" (submit)="$event.preventDefault(); store.login(password())">
         <label for="admin-password">Admin password</label>
+        <!-- The host laptop shows only this field, so focusing it saves a click before the show. -->
+        <!-- eslint-disable @angular-eslint/template/no-autofocus -->
         <input
+          #adminPasswordField
           id="admin-password"
           class="field"
           type="password"
           autocomplete="current-password"
           autofocus
           [value]="password()"
-          (input)="password.set($any($event.target).value)"
+          (input)="password.set(adminPasswordField.value)"
         />
+        <!-- eslint-enable @angular-eslint/template/no-autofocus -->
         <button class="btn" type="submit" [disabled]="!password()">Log in</button>
         @if (store.error(); as error) {
           <p class="error">{{ error }}</p>

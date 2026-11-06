@@ -65,7 +65,9 @@ export class SetupStore {
   }
 
   /** Every call returns the whole setup. Resolves to false if the server refused. */
-  private async change(call: () => Promise<ReturnType<ServerMethods['GetSetup']>>): Promise<boolean> {
+  private async change(
+    call: () => Promise<ReturnType<ServerMethods['GetSetup']>>,
+  ): Promise<boolean> {
     this.error.set(null);
     try {
       this.setup.set(await call());

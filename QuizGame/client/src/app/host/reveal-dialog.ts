@@ -11,7 +11,9 @@ import { HostStore } from './host.store';
         <header>
           <button
             class="eye"
-            [attr.aria-label]="store.answerVisible() ? 'Hide correct answer' : 'Show correct answer'"
+            [attr.aria-label]="
+              store.answerVisible() ? 'Hide correct answer' : 'Show correct answer'
+            "
             [attr.aria-pressed]="store.answerVisible()"
             (click)="store.toggleAnswer()"
           >
@@ -41,7 +43,9 @@ import { HostStore } from './host.store';
                   (click)="store.judge(bid, 'Up')"
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M7 21H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h3m0 10V11l4.5-8a2.5 2.5 0 0 1 2.5 2.5V9h5a2 2 0 0 1 2 2.3l-1.2 7.6a2.5 2.5 0 0 1-2.5 2.1H7Z" />
+                    <path
+                      d="M7 21H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h3m0 10V11l4.5-8a2.5 2.5 0 0 1 2.5 2.5V9h5a2 2 0 0 1 2 2.3l-1.2 7.6a2.5 2.5 0 0 1-2.5 2.1H7Z"
+                    />
                   </svg>
                 </button>
                 <button
@@ -51,7 +55,9 @@ import { HostStore } from './host.store';
                   (click)="store.judge(bid, 'Down')"
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M7 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3m0-10v10l4.5 8a2.5 2.5 0 0 0 2.5-2.5V15h5a2 2 0 0 0 2-2.3l-1.2-7.6A2.5 2.5 0 0 0 16.8 3H7Z" />
+                    <path
+                      d="M7 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3m0-10v10l4.5 8a2.5 2.5 0 0 0 2.5-2.5V15h5a2 2 0 0 0 2-2.3l-1.2-7.6A2.5 2.5 0 0 0 16.8 3H7Z"
+                    />
                   </svg>
                 </button>
               </li>
@@ -59,7 +65,9 @@ import { HostStore } from './host.store';
           </ul>
         }
 
-        <p class="summary">{{ store.bids()?.length ?? 0 }} out of {{ store.teamCount() }} teams participated</p>
+        <p class="summary">
+          {{ store.bids()?.length ?? 0 }} out of {{ store.teamCount() }} teams participated
+        </p>
       </div>
     </div>
   `,

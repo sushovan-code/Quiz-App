@@ -8,7 +8,7 @@ import { TeamStore } from './team.store';
       <h1>Bid Quiz</h1>
       <form class="panel" (submit)="$event.preventDefault(); login()">
         <label for="team">Your team</label>
-        <select id="team" class="field" (change)="teamId.set(+$any($event.target).value)">
+        <select #teamField id="team" class="field" (change)="teamId.set(+teamField.value)">
           <option value="0" [selected]="teamId() === 0" disabled>Choose a team…</option>
           @for (team of store.teamOptions(); track team.id) {
             <option [value]="team.id" [selected]="team.id === teamId()">{{ team.name }}</option>
@@ -17,15 +17,18 @@ import { TeamStore } from './team.store';
 
         <label for="password">Team password</label>
         <input
+          #passwordField
           id="password"
           class="field"
           type="password"
           autocomplete="off"
           [value]="password()"
-          (input)="password.set($any($event.target).value)"
+          (input)="password.set(passwordField.value)"
         />
 
-        <button class="btn" type="submit" [disabled]="!teamId() || !password()">Join the show</button>
+        <button class="btn" type="submit" [disabled]="!teamId() || !password()">
+          Join the show
+        </button>
         @if (store.error(); as error) {
           <p class="error">{{ error }}</p>
         }

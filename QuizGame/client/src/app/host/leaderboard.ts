@@ -16,7 +16,11 @@ import { HostStore } from './host.store';
       @for (team of store.leaderboard(); track team.id) {
         <li [class.out]="!team.canBid" [style.--team-color]="team.color">
           <span class="name">
-            <i class="dot" [class.online]="team.online" [attr.aria-label]="team.online ? 'Online' : 'Offline'"></i>
+            <i
+              class="dot"
+              [class.online]="team.online"
+              [attr.aria-label]="team.online ? 'Online' : 'Offline'"
+            ></i>
             {{ team.name }}
           </span>
           <app-animated-number class="balance" [value]="team.bidBalance" />
