@@ -1,0 +1,5 @@
+[*.cs]
+# Test names follow Method_State_ExpectedResult (docs/standards/naming-conventions.md), so underscores are intended.
+dotnet_diagnostic.CA1707.severity = none
+# Test classes release their resources in IAsyncLifetime.DisposeAsync, which xUnit always calls.
+dotnet_diagnostic.CA1001.severity = none

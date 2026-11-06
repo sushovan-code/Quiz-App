@@ -1,0 +1,4 @@
+# Written by `dotnet ef migrations add`. Don't edit by hand, and don't hold it to the style rules.
+[*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

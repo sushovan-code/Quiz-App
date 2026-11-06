@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Game rules only. References nothing, so it can't depend on a database, web or realtime framework. -->
+  <PropertyGroup>
+    <RootNamespace>BidQuiz.Domain</RootNamespace>
+  </PropertyGroup>
+
+</Project>

@@ -1,4 +1,12 @@
 <Solution>
-  <Project Path="server/BidQuiz.Server.csproj" />
-  <Project Path="tests/BidQuiz.Tests/BidQuiz.Tests.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/BidQuiz.Domain/BidQuiz.Domain.csproj" />
+    <Project Path="src/BidQuiz.Application/BidQuiz.Application.csproj" />
+    <Project Path="src/BidQuiz.Infrastructure/BidQuiz.Infrastructure.csproj" />
+    <Project Path="src/BidQuiz.Api/BidQuiz.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BidQuiz.UnitTests/BidQuiz.UnitTests.csproj" />
+    <Project Path="tests/BidQuiz.IntegrationTests/BidQuiz.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

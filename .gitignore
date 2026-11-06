@@ -1,0 +1,2 @@
+# Personal Claude Code settings stay local; shared agents, commands and settings.json are tracked.
+.claude/settings.local.json
