@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BidQuiz.Server</RootNamespace>
+    <ClientDir>$(MSBuildProjectDirectory)\..\client\</ClientDir>
+    <!-- wwwroot is produced by the Angular build, so it must not be globbed at evaluation time. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClientInputs Include="$(ClientDir)src\**\*;$(ClientDir)angular.json;$(ClientDir)package.json;$(ClientDir)package-lock.json;$(ClientDir)tsconfig*.json" />
+  </ItemGroup>
+
+  <!-- Keeps `dotnet run` a single command. Pass -p:SkipClientBuild=true to build the API alone. -->
+  <Target Name="BuildClient" BeforeTargets="BeforeBuild"
+          Condition="'$(SkipClientBuild)' != 'true' And Exists('$(ClientDir)package.json')"
+          Inputs="@(ClientInputs)" Outputs="wwwroot\index.html">
+    <Exec Command="npm ci" WorkingDirectory="$(ClientDir)" Condition="!Exists('$(ClientDir)node_modules')" />
+    <Exec Command="npx ng build" WorkingDirectory="$(ClientDir)" />
+  </Target>
+
+  <Target Name="PublishClient" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ClientFiles Include="wwwroot\**" />
+      <ResolvedFileToPublish Include="@(ClientFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+</Project>

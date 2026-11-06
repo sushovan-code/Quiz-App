@@ -1,0 +1,146 @@
+// Fonts are bundled via angular.json rather than loaded from Google's CDN, so the theme survives
+// venue Wi-Fi with no internet.
+
+:root {
+  --theatre-black: #0A0505;
+  --oxblood: #2B0A0E;
+  --maroon: #5C0F17;
+  --curtain-red: #8B1A24;
+  --gold: #D4AF37;
+  --champagne: #F3D98B;
+  --ivory: #F5E6C8;
+  --emerald: #2E7D4F;
+  --signal-red: #B3261E;
+
+  --gold-glow: 0 0 18px rgb(212 175 55 / 35%);
+  --heading-font: 'Limelight', serif;
+  --body-font: 'Lato', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(ellipse at center, var(--maroon) 0%, var(--oxblood) 55%, var(--theatre-black) 100%) fixed;
+  color: var(--ivory);
+  font-family: var(--body-font);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--champagne);
+  font-family: var(--heading-font);
+  font-weight: 400;
+}
+
+.panel {
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  background: rgb(10 5 5 / 45%);
+  box-shadow: var(--gold-glow);
+}
+
+.btn {
+  padding: 0.7em 1.4em;
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  background: radial-gradient(circle at 30% 30%, var(--curtain-red), var(--oxblood));
+  color: var(--ivory);
+  font-family: var(--heading-font);
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: box-shadow 150ms, filter 150ms;
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--gold-glow);
+    filter: brightness(1.15);
+  }
+
+  &:disabled {
+    border-color: #6b6460;
+    background: #3a3533;
+    color: #8f8884;
+    cursor: not-allowed;
+  }
+}
+
+.field {
+  display: block;
+  width: 100%;
+  padding: 0.75em;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: rgb(10 5 5 / 70%);
+  color: var(--ivory);
+  font: inherit;
+  font-size: 1rem; // Below 16px, iOS zooms the page on focus.
+
+  &:focus {
+    outline: 2px solid var(--champagne);
+    outline-offset: 1px;
+  }
+
+  option {
+    background: var(--oxblood);
+    color: var(--ivory);
+  }
+}
+
+.overlay {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(10 5 5 / 72%);
+}
+
+.dialog {
+  position: relative;
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  background: radial-gradient(ellipse at top, var(--maroon), var(--oxblood) 70%);
+  box-shadow: 0 0 40px rgb(212 175 55 / 45%);
+}
+
+.error {
+  color: #ff9b8f;
+}
+
+.center-screen {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.conn-banner {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  left: 0;
+  padding: 0.25rem;
+  background: var(--signal-red);
+  color: var(--ivory);
+  font-size: 0.85rem;
+  text-align: center;
+}
