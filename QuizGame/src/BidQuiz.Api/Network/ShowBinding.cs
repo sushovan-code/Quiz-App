@@ -1,10 +1,12 @@
+using System.Net;
+
 namespace BidQuiz.Api.Network;
 
 /// <summary>
 /// Locally the show listens on every interface so phones on the venue Wi-Fi can join. App Service,
 /// Aspire and an explicit ASPNETCORE_URLS keep their own binding.
 /// </summary>
-public sealed class ShowBinding
+public sealed partial class ShowBinding
 {
     private readonly int _port;
     private readonly bool _isLanShow;
@@ -29,23 +31,35 @@ public sealed class ShowBinding
         return new ShowBinding(port, !hasExplicitBinding);
     }
 
-    /// <summary>Prints the host and team URLs once the server is listening.</summary>
-    public void PrintUrlsOnStart(WebApplication app)
+    /// <summary>Logs the host and team URLs once the server is listening.</summary>
+    public void LogUrlsOnStart(WebApplication app)
     {
         if (!_isLanShow)
         {
             return;
         }
 
+        var logger = app.Services.GetRequiredService<ILogger<ShowBinding>>();
         app.Lifetime.ApplicationStarted.Register(() =>
         {
-            var lan = LanAddress.Find();
-            Console.WriteLine();
-            Console.WriteLine($"  Host screen:  http://localhost:{_port}/host");
-            Console.WriteLine(lan is null
-                ? "  LAN address not found. Is this machine on the venue Wi-Fi?"
-                : $"  Team join:    http://{lan}:{_port}/play");
-            Console.WriteLine();
+            LogHostScreen(logger, _port);
+            if (LanAddress.Find() is { } lan)
+            {
+                LogTeamJoin(logger, lan, _port);
+            }
+            else
+            {
+                LogNoLanAddress(logger);
+            }
         });
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Host screen: http://localhost:{Port}/host")]
+    private static partial void LogHostScreen(ILogger logger, int port);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Team join:   http://{LanAddress}:{Port}/play")]
+    private static partial void LogTeamJoin(ILogger logger, IPAddress lanAddress, int port);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "LAN address not found. Is this machine on the venue Wi-Fi?")]
+    private static partial void LogNoLanAddress(ILogger logger);
 }

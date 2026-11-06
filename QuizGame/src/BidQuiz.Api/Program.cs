@@ -15,6 +15,8 @@ using BidQuiz.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Bad settings stop the app at startup rather than surfacing mid-show.
 builder.Services.AddValidatedOptions<ScoringOptions>(ScoringOptions.SectionName);
 builder.Services.AddValidatedOptions<GameOptions>(GameOptions.SectionName);
@@ -61,9 +63,10 @@ if (app.Environment.IsDevelopment())
 
 app.MapClientEndpoints();
 app.MapHub<GameHub>(GameHub.Path);
+app.MapDefaultEndpoints();
 app.MapFallbackToFile("index.html");
 
-binding.PrintUrlsOnStart(app);
+binding.LogUrlsOnStart(app);
 
 await app.RunAsync();
 

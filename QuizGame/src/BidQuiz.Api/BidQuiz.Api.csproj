@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BidQuiz.Application\BidQuiz.Application.csproj" />
     <ProjectReference Include="..\BidQuiz.Infrastructure\BidQuiz.Infrastructure.csproj" />
+    <ProjectReference Include="..\BidQuiz.ServiceDefaults\BidQuiz.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

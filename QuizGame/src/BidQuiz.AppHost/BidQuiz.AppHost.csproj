@@ -1,0 +1,20 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.0">
+
+  <!-- Local orchestration only: runs the API and the Angular dev server with the Aspire dashboard. Never deployed. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>38fdf2a5-45d1-4765-9fa5-3b46b59b4d02</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.6.0" />
+    <!-- Aspire.Hosting 13.6.0 brings MessagePack 2.5.302 (GHSA-qhrr-8q5h-9q3h); 2.5.303 is the patched release. -->
+    <PackageReference Include="MessagePack" Version="2.5.303" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BidQuiz.Api\BidQuiz.Api.csproj" />
+  </ItemGroup>
+
+</Project>

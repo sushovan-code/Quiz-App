@@ -4,6 +4,8 @@
     <Project Path="src/BidQuiz.Application/BidQuiz.Application.csproj" />
     <Project Path="src/BidQuiz.Infrastructure/BidQuiz.Infrastructure.csproj" />
     <Project Path="src/BidQuiz.Api/BidQuiz.Api.csproj" />
+    <Project Path="src/BidQuiz.ServiceDefaults/BidQuiz.ServiceDefaults.csproj" />
+    <Project Path="src/BidQuiz.AppHost/BidQuiz.AppHost.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/BidQuiz.UnitTests/BidQuiz.UnitTests.csproj" />
