@@ -85,14 +85,21 @@ public sealed class GameService(
             await using var db = await dbFactory.CreateDbContextAsync();
             var state = await db.GameStates.SingleAsync();
             if (state.Status == GameStatus.Accepting)
+            {
                 throw new GameRuleException("A question is already running.");
+            }
 
             var question = await db.Questions.FindAsync(questionId)
                 ?? throw new GameRuleException("Unknown question.");
             if (question.Order is null)
+            {
                 throw new GameRuleException("That question is not in this game.");
+            }
+
             if (question.Asked)
+            {
                 throw new GameRuleException("That question has already been asked.");
+            }
 
             var now = UtcNow;
             var endsAt = now.AddSeconds(_game.QuestionSeconds);
@@ -119,17 +126,26 @@ public sealed class GameService(
 
             // Checks the clock rather than the status: the deadline tick may not have fired yet.
             if (state.Status != GameStatus.Accepting || state.EndsAtUtc is not { } endsAt || now >= endsAt)
+            {
                 throw new GameRuleException("Time is up. Your bid was not accepted.");
+            }
 
             answer = answer.Trim();
             if (answer.Length == 0)
+            {
                 throw new GameRuleException("Please enter an answer.");
+            }
+
             if (answer.Length > MaxAnswerLength)
+            {
                 throw new GameRuleException($"Answers are limited to {MaxAnswerLength} characters.");
+            }
 
             var team = await db.Teams.FindAsync(teamId) ?? throw new GameRuleException("Unknown team.");
             if (scoring.ValidateBid(amount, team.BidBalance) is { } error)
+            {
                 throw new GameRuleException(error);
+            }
 
             var questionId = state.CurrentQuestionId!.Value;
             var bid = await db.Bids.SingleOrDefaultAsync(b => b.TeamId == teamId && b.QuestionId == questionId);
@@ -160,7 +176,9 @@ public sealed class GameService(
     public async Task TickAsync()
     {
         if (_deadline is not { } deadline || UtcNow < deadline)
+        {
             return;
+        }
 
         using (await gate.EnterAsync())
         {
@@ -168,7 +186,9 @@ public sealed class GameService(
             var state = await db.GameStates.SingleAsync();
             _deadline = null;
             if (state.Status != GameStatus.Accepting)
+            {
                 return;
+            }
 
             state.Status = GameStatus.Closed;
             await db.SaveChangesAsync();
@@ -183,7 +203,9 @@ public sealed class GameService(
             await using var db = await dbFactory.CreateDbContextAsync();
             var state = await db.GameStates.SingleAsync();
             if (state.Status == GameStatus.Idle)
+            {
                 throw new GameRuleException("No question has been asked yet.");
+            }
 
             var closedEarly = state.Status == GameStatus.Accepting;
             state.Status = GameStatus.Revealed;
@@ -191,7 +213,10 @@ public sealed class GameService(
             _deadline = null;
 
             if (closedEarly)
+            {
                 await notifier.TimeUpAsync();
+            }
+
             await notifier.BidsRevealedAsync(await GetBidsAsync(db, state.CurrentQuestionId));
         }
     }
@@ -203,7 +228,9 @@ public sealed class GameService(
             await using var db = await dbFactory.CreateDbContextAsync();
             var state = await db.GameStates.SingleAsync();
             if (state.Status != GameStatus.Revealed)
+            {
                 throw new GameRuleException("Reveal the bids first.");
+            }
 
             var question = await db.Questions.FindAsync(state.CurrentQuestionId)
                 ?? throw new GameRuleException("Unknown question.");
@@ -222,7 +249,9 @@ public sealed class GameService(
             var bid = await db.Bids.Include(b => b.Team).SingleOrDefaultAsync(b => b.Id == bidId)
                 ?? throw new GameRuleException("Unknown bid.");
             if (state.Status != GameStatus.Revealed || bid.QuestionId != state.CurrentQuestionId)
+            {
                 throw new GameRuleException("That bid is not open for judging.");
+            }
 
             var highest = await db.Bids.Where(b => b.QuestionId == bid.QuestionId).MaxAsync(b => b.Amount);
             var team = bid.Team!;

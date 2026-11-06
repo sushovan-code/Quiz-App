@@ -15,6 +15,8 @@ public static class TeamRoster
         state.TeamsPerGame = Math.Max(1, Math.Min(state.TeamsPerGame, teams.Count));
 
         for (var index = 0; index < teams.Count; index++)
+        {
             teams[index].Active = index < state.TeamsPerGame;
+        }
     }
 }

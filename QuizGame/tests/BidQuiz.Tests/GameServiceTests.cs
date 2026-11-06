@@ -19,7 +19,7 @@ public sealed class GameServiceTests : IAsyncLifetime
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero));
     private readonly RecordingNotifier _notifier = new();
     private readonly PresenceTracker _presence = new();
-    private IDbContextFactory<GameDbContext> _dbFactory = null!;
+    private Factory _dbFactory = null!;
     private GameService _game = null!;
 
     public async Task InitializeAsync()
@@ -388,6 +388,9 @@ public sealed class GameServiceTests : IAsyncLifetime
     private sealed class Factory(DbContextOptions<GameDbContext> options) : IDbContextFactory<GameDbContext>
     {
         public GameDbContext CreateDbContext() => new(options);
+
+        public Task<GameDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(CreateDbContext());
     }
 
     private sealed class InOrderPicker : IQuestionPicker

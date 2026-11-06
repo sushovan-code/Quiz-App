@@ -24,9 +24,14 @@ public sealed class AuthService(
             await using var db = await dbFactory.CreateDbContextAsync();
             var team = await db.Teams.FindAsync(teamId);
             if (team is null || !TeamPassword.Matches(team, password))
+            {
                 throw new GameRuleException("Wrong team or password.");
+            }
+
             if (!team.Active)
+            {
                 throw new GameRuleException("That team isn't playing in this game.");
+            }
 
             team.SessionToken ??= NewToken();
             await db.SaveChangesAsync();
@@ -46,7 +51,9 @@ public sealed class AuthService(
         var expected = Encoding.UTF8.GetBytes(_game.AdminPassword);
         var actual = Encoding.UTF8.GetBytes(password);
         if (expected.Length == 0 || !CryptographicOperations.FixedTimeEquals(expected, actual))
+        {
             throw new GameRuleException("Wrong admin password.");
+        }
 
         var token = NewToken();
         _adminTokens[token] = 0;
@@ -56,7 +63,9 @@ public sealed class AuthService(
     public void ValidateAdminToken(string token)
     {
         if (!_adminTokens.ContainsKey(token))
+        {
             throw new GameRuleException("Session expired. Please log in again.");
+        }
     }
 
     private static string NewToken() => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));

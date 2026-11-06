@@ -1,7 +1,7 @@
 namespace BidQuiz.Server.Game;
 
 /// <summary>Lets one change to the game run at a time, across every service that writes.</summary>
-public sealed class GameGate
+public sealed class GameGate : IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
@@ -10,6 +10,8 @@ public sealed class GameGate
         await _semaphore.WaitAsync();
         return new Release(_semaphore);
     }
+
+    public void Dispose() => _semaphore.Dispose();
 
     private sealed class Release(SemaphoreSlim semaphore) : IDisposable
     {

@@ -19,7 +19,9 @@ public sealed class QuestionDeck(IQuestionPicker picker)
         var candidates = bank.Select(q => new QuestionCandidate(q.Id, q.CorrectAnswer)).ToList();
         var order = 1;
         foreach (var id in picker.Pick(candidates, count))
+        {
             bank.Single(q => q.Id == id).Order = order++;
+        }
     }
 
     public async Task<IReadOnlyList<QuestionSummaryDto>> ReadBoardAsync(GameDbContext db) =>

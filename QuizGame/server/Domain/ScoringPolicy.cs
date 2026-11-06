@@ -33,18 +33,29 @@ public sealed class HighestBidScoringPolicy(IOptions<ScoringOptions> options) : 
     public string? ValidateBid(int amount, int bidBalance)
     {
         if (!CanBid(bidBalance))
+        {
             return "Your Bid Balance is 0, so you are out of the game.";
+        }
+
         if (amount <= 0 || amount % _options.BidStep != 0)
+        {
             return $"Bid must be a multiple of {_options.BidStep}.";
+        }
+
         if (amount > bidBalance)
+        {
             return "Bid exceeds your Bid Balance.";
+        }
+
         return null;
     }
 
     public Balances Settle(Balances current, Verdict verdict, int bid, bool isHighest)
     {
         if (!isHighest)
+        {
             return current;
+        }
 
         return verdict == Verdict.Up
             ? new Balances(current.BidBalance + bid, current.Wallet + Percent(bid, _options.WinPercent))

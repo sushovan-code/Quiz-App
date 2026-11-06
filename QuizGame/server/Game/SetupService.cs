@@ -36,12 +36,16 @@ public sealed class SetupService(
     {
         var teams = await db.Teams.ToListAsync();
         if (teams.Count >= GameLimits.MaxTeams)
+        {
             throw new GameRuleException($"A game can have at most {GameLimits.MaxTeams} teams.");
+        }
 
         var name = CleanName(input.Name);
         EnsureNameIsFree(teams, name, null);
         if (string.IsNullOrWhiteSpace(input.Password))
+        {
             throw new GameRuleException("Please enter a team password.");
+        }
 
         var opening = scoring.Opening;
         var team = new Team
@@ -64,7 +68,9 @@ public sealed class SetupService(
         EnsureNameIsFree(teams, name, teamId);
         team.Name = name;
         if (!string.IsNullOrWhiteSpace(input.Password))
+        {
             TeamPassword.Set(team, input.Password);
+        }
     });
 
     public Task<SetupDto> DeleteTeamAsync(int teamId) => ChangeAsync(async db =>
@@ -91,17 +97,25 @@ public sealed class SetupService(
         var question = await db.Questions.FindAsync(questionId) ?? throw new GameRuleException("Unknown question.");
         var state = await db.GameStates.SingleAsync();
         if (await db.Questions.CountAsync() <= state.QuestionsPerGame)
+        {
             throw new GameRuleException($"The bank needs at least {state.QuestionsPerGame} questions for this game.");
+        }
+
         db.Questions.Remove(question);
     });
 
     public Task<SetupDto> SetQuestionsPerGameAsync(int count) => ChangeAsync(async db =>
     {
         if (count is < GameLimits.MinQuestionsPerGame or > GameLimits.MaxQuestionsPerGame)
+        {
             throw new GameRuleException(
                 $"Questions per game must be between {GameLimits.MinQuestionsPerGame} and {GameLimits.MaxQuestionsPerGame}.");
+        }
+
         if (count > await db.Questions.CountAsync())
+        {
             throw new GameRuleException("There aren't that many questions in the bank.");
+        }
 
         var state = await db.GameStates.SingleAsync();
         state.QuestionsPerGame = count;
@@ -110,7 +124,9 @@ public sealed class SetupService(
     public Task<SetupDto> SetTeamsPerGameAsync(int count) => ChangeAsync(async db =>
     {
         if (count < 1 || count > await db.Teams.CountAsync())
+        {
             throw new GameRuleException("Choose between 1 team and every team on the roster.");
+        }
 
         var state = await db.GameStates.SingleAsync();
         state.TeamsPerGame = count;
@@ -128,7 +144,9 @@ public sealed class SetupService(
         {
             await using var db = await dbFactory.CreateDbContextAsync();
             if (await IsLockedAsync(db))
+            {
                 throw new GameRuleException("Reset the game before changing the setup.");
+            }
 
             await change(db);
             await db.SaveChangesAsync();
@@ -149,7 +167,9 @@ public sealed class SetupService(
         var state = await db.GameStates.SingleAsync();
         var expected = Math.Min(state.QuestionsPerGame, await db.Questions.CountAsync());
         if (await db.Questions.CountAsync(q => q.Order != null) == expected)
+        {
             return;
+        }
 
         await deck.DealAsync(db, state.QuestionsPerGame);
         await db.SaveChangesAsync();
@@ -161,11 +181,19 @@ public sealed class SetupService(
         var answer = input.CorrectAnswer.Trim();
         var category = input.Category.Trim();
         if (text.Length == 0 || answer.Length == 0 || category.Length == 0)
+        {
             throw new GameRuleException("A question needs a category, text and a correct answer.");
+        }
+
         if (text.Length > MaxTextLength || answer.Length > MaxTextLength || category.Length > MaxNameLength)
+        {
             throw new GameRuleException("That question is too long.");
-        if (await db.Questions.AnyAsync(q => q.Id != question.Id && q.Text.ToLower() == text.ToLower()))
+        }
+
+        if (await db.Questions.AnyAsync(q => q.Id != question.Id && EF.Functions.Collate(q.Text, "NOCASE") == text))
+        {
             throw new GameRuleException("That question is already in the bank.");
+        }
 
         question.Category = category;
         question.Text = text;
@@ -177,16 +205,24 @@ public sealed class SetupService(
     {
         name = name.Trim();
         if (name.Length == 0)
+        {
             throw new GameRuleException("Please enter a team name.");
+        }
+
         if (name.Length > MaxNameLength)
+        {
             throw new GameRuleException($"Team names are limited to {MaxNameLength} characters.");
+        }
+
         return name;
     }
 
     private static void EnsureNameIsFree(IEnumerable<Team> teams, string name, int? ownId)
     {
         if (teams.Any(t => t.Id != ownId && string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
             throw new GameRuleException("There is already a team with that name.");
+        }
     }
 
     private static Task<bool> IsLockedAsync(GameDbContext db) => db.Questions.AnyAsync(q => q.Asked);

@@ -139,7 +139,7 @@ public sealed class HubSecurityTests : IAsyncLifetime
         await admin.InvokeAsync("RevealBids");
         await admin.InvokeAsync("RevealAnswer");
 
-        await WaitUntilAsync(() => adminReceived.Any(m => m.StartsWith("AnswerRevealed:")));
+        await WaitUntilAsync(() => adminReceived.Any(m => m.StartsWith("AnswerRevealed:", StringComparison.Ordinal)));
 
         // A marker sent after the admin messages proves anything bound for the team has arrived.
         var marker = new TaskCompletionSource();
@@ -148,7 +148,7 @@ public sealed class HubSecurityTests : IAsyncLifetime
             .Clients.Group("teams").SendAsync("Marker");
         await marker.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        Assert.Contains(adminReceived, m => m.StartsWith("BidsRevealed:") && m.Contains("my answer"));
+        Assert.Contains(adminReceived, m => m.StartsWith("BidsRevealed:", StringComparison.Ordinal) && m.Contains("my answer"));
         Assert.Contains(adminReceived, m => m == $"AnswerRevealed:{correctAnswer}");
         Assert.Empty(teamReceived);
     }
@@ -260,7 +260,7 @@ public sealed class HubSecurityTests : IAsyncLifetime
 
         Assert.Equal(count, setup.QuestionsPerGame);
         Assert.Equal(count, setup.Questions.Count(q => q.Order is not null));
-        await WaitUntilAsync(() => received.Any(m => m.StartsWith("QuestionBoardChanged:")));
+        await WaitUntilAsync(() => received.Any(m => m.StartsWith("QuestionBoardChanged:", StringComparison.Ordinal)));
     }
 
     [Theory]
@@ -294,7 +294,9 @@ public sealed class HubSecurityTests : IAsyncLifetime
         var setup = await admin.InvokeAsync<SetupDto>("GetSetup");
 
         foreach (var question in setup.Questions.Skip(10))
+        {
             await admin.InvokeAsync<SetupDto>("DeleteQuestion", question.Id);
+        }
 
         var ex = await Assert.ThrowsAsync<HubException>(
             () => admin.InvokeAsync<SetupDto>("DeleteQuestion", setup.Questions[0].Id));
@@ -379,7 +381,10 @@ public sealed class HubSecurityTests : IAsyncLifetime
     {
         var deadline = DateTime.UtcNow.AddSeconds(5);
         while (!condition() && DateTime.UtcNow < deadline)
+        {
             await Task.Delay(20);
+        }
+
         Assert.True(condition());
     }
 }

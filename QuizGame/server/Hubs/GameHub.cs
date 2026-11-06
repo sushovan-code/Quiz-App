@@ -58,7 +58,10 @@ public sealed class GameHub(
     public Task<MyBidDto> SubmitBid(string answer, int amount)
     {
         if (Context.Items[TeamIdKey] is not int teamId)
+        {
             throw new GameRuleException("Please log in with your team first.");
+        }
+
         return game.SubmitBidAsync(teamId, answer, amount);
     }
 
@@ -155,7 +158,9 @@ public sealed class GameHub(
     private void RequireAdmin()
     {
         if (Context.Items[IsAdminKey] is not true)
+        {
             throw new GameRuleException("Admin only.");
+        }
     }
 
     private async Task<TeamSnapshot> AttachTeamAsync(int teamId)
@@ -165,7 +170,9 @@ public sealed class GameHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, TeamsGroup);
 
         if (presence.Add(Context.ConnectionId, teamId))
+        {
             await notifier.TeamPresenceChangedAsync(teamId, true);
+        }
 
         return await game.GetTeamSnapshotAsync(teamId);
     }
@@ -180,6 +187,8 @@ public sealed class GameHub(
     private async Task ReleasePresenceAsync()
     {
         if (presence.Remove(Context.ConnectionId) is { } offlineTeamId)
+        {
             await notifier.TeamPresenceChangedAsync(offlineTeamId, false);
+        }
     }
 }

@@ -65,7 +65,9 @@ public static class Seeder
             .SqlQueryRaw<string>("SELECT name AS Value FROM pragma_table_info('Teams')")
             .ToListAsync();
         if (columns.Contains(nameof(Team.Active)))
+        {
             return;
+        }
 
         await db.Database.ExecuteSqlRawAsync("ALTER TABLE Teams ADD COLUMN Active INTEGER NOT NULL DEFAULT 1");
         await db.Database.ExecuteSqlRawAsync(
@@ -78,7 +80,10 @@ public static class Seeder
         await db.SaveChangesAsync();
 
         if (!await db.Questions.AnyAsync(q => q.Asked))
+        {
             await deck.DealAsync(db, state.QuestionsPerGame);
+        }
+
         await TeamRoster.ApplyAsync(db);
         await db.SaveChangesAsync();
     }
@@ -95,7 +100,9 @@ public static class Seeder
         foreach (var seed in teamSeeds.Where(s => teams.All(t => t.Name != s.Name)))
         {
             if (teams.Count >= GameLimits.MaxTeams)
+            {
                 break;
+            }
 
             var team = new Team
             {
@@ -126,7 +133,9 @@ public static class Seeder
     {
         var directory = Path.GetDirectoryName(new SqliteConnectionStringBuilder(connectionString).DataSource);
         if (!string.IsNullOrEmpty(directory))
+        {
             Directory.CreateDirectory(directory);
+        }
     }
 
     private static async Task<List<T>> ReadAsync<T>(string path)

@@ -39,7 +39,9 @@ var hasExplicitBinding = !string.IsNullOrEmpty(builder.Configuration["urls"])
     || !string.IsNullOrEmpty(builder.Configuration["http_ports"])
     || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
 if (!hasExplicitBinding)
+{
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 var app = builder.Build();
 

@@ -19,7 +19,10 @@ public sealed class PresenceTracker : IPresence
     public int? Remove(string connectionId)
     {
         if (!_connections.TryRemove(connectionId, out var teamId))
+        {
             return null;
+        }
+
         return IsOnline(teamId) ? null : teamId;
     }
 
