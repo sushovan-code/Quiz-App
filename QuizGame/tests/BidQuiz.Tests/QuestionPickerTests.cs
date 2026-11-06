@@ -1,4 +1,4 @@
-using BidQuiz.Server.Domain;
+using BidQuiz.Api.Domain;
 
 namespace BidQuiz.Tests;
 

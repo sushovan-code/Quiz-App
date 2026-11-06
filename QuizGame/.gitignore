@@ -3,7 +3,7 @@ obj/
 node_modules/
 .angular/
 dist/
-server/wwwroot/
+**/wwwroot/
 *.db
 *.db-shm
 *.db-wal

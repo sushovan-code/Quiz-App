@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\server\BidQuiz.Server.csproj" />
+    <ProjectReference Include="..\..\src\BidQuiz.Api\BidQuiz.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

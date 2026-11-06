@@ -1,6 +1,6 @@
-using BidQuiz.Server.Data;
-using BidQuiz.Server.Domain;
-using BidQuiz.Server.Game;
+using BidQuiz.Api.Data;
+using BidQuiz.Api.Domain;
+using BidQuiz.Api.Game;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

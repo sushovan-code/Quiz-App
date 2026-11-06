@@ -2,8 +2,8 @@ using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BidQuiz.Server.Domain;
-using BidQuiz.Server.Game;
+using BidQuiz.Api.Domain;
+using BidQuiz.Api.Game;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.SignalR;
@@ -144,7 +144,7 @@ public sealed class HubSecurityTests : IAsyncLifetime
         // A marker sent after the admin messages proves anything bound for the team has arrived.
         var marker = new TaskCompletionSource();
         using var subscription = team.On("Marker", () => marker.SetResult());
-        await _factory.Services.GetRequiredService<IHubContext<BidQuiz.Server.Hubs.GameHub>>()
+        await _factory.Services.GetRequiredService<IHubContext<BidQuiz.Api.Hubs.GameHub>>()
             .Clients.Group("teams").SendAsync("Marker");
         await marker.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
