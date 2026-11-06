@@ -331,6 +331,52 @@ public sealed class HubSecurityTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task AdminLogout_RevokesTheSession_AndLeavesTheGameAsItWas()
+    {
+        var oldHostReceived = new ConcurrentBag<string>();
+        var newHostReceived = new ConcurrentBag<string>();
+        await using var oldHost = await ConnectAsync();
+        await using var newHost = await ConnectAsync();
+        await using var team = await ConnectAsync();
+        oldHost.On<int, int>("AnswerCountChanged", (answered, total) => oldHostReceived.Add($"AnswerCountChanged:{answered}/{total}"));
+        newHost.On<int, int>("AnswerCountChanged", (answered, total) => newHostReceived.Add($"AnswerCountChanged:{answered}/{total}"));
+        var option = await FirstTeamAsync();
+        await team.InvokeAsync<TeamSessionResponse>("JoinTeam", option.Id, "reel-1");
+        var session = await oldHost.InvokeAsync<AdminSessionResponse>("AdminLogin", AdminPassword);
+        var question = session.Snapshot.Questions[0];
+        await oldHost.InvokeAsync("StartQuestion", question.Id);
+        await WaitUntilAsync(() => !oldHostReceived.IsEmpty);
+
+        await oldHost.InvokeAsync("AdminLogout", session.Token);
+        await oldHost.InvokeAsync("AdminLogout", session.Token);
+        oldHostReceived.Clear();
+
+        await Assert.ThrowsAsync<HubException>(() => oldHost.InvokeAsync("RevealBids"));
+        var expired = await Assert.ThrowsAsync<HubException>(
+            () => oldHost.InvokeAsync<AdminSessionResponse>("ResumeAdmin", session.Token));
+        Assert.Contains("Session expired", expired.Message);
+
+        var resumed = (await newHost.InvokeAsync<AdminSessionResponse>("AdminLogin", AdminPassword)).Snapshot;
+        Assert.Equal(GameStatus.Accepting, resumed.Status);
+        Assert.Equal(question.Id, resumed.Question?.Id);
+        Assert.Equal(
+            session.Snapshot.Teams.Select(t => (t.Id, t.Wallet, t.BidBalance)),
+            resumed.Teams.Select(t => (t.Id, t.Wallet, t.BidBalance)));
+
+        await team.InvokeAsync<MyBidResponse>("SubmitBid", "my answer", 2000);
+        await WaitUntilAsync(() => newHostReceived.Any(m => m.StartsWith("AnswerCountChanged:", StringComparison.Ordinal)));
+
+        // A marker sent to everyone after the admin message proves anything bound for the old host has arrived.
+        var marker = new TaskCompletionSource();
+        using var subscription = oldHost.On("Marker", () => marker.SetResult());
+        await _factory.Services.GetRequiredService<IHubContext<BidQuiz.Api.Hubs.GameHub>>()
+            .Clients.All.SendAsync("Marker");
+        await marker.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Empty(oldHostReceived);
+    }
+
+    [Fact]
     public async Task Upgrade_KeepsAnExistingGame_AndAddsTheNewTeamsAndQuestions()
     {
         await using (var admin = await ConnectAsync())

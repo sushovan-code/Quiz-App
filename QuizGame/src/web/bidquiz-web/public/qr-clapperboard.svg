@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Clapperboard">
+  <defs>
+    <clipPath id="stick"><rect x="10" y="15" width="44" height="9" rx="1.5" /></clipPath>
+    <clipPath id="band"><rect x="10" y="27" width="44" height="7" /></clipPath>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="10" fill="#F5E6C8" stroke="#D4AF37" stroke-width="2" />
+  <rect x="10" y="27" width="44" height="25" rx="2.5" fill="#0A0505" />
+  <g clip-path="url(#band)">
+    <rect x="10" y="27" width="44" height="7" fill="#D4AF37" />
+    <path d="M14 27h6l-5 7h-6zM26 27h6l-5 7h-6zM38 27h6l-5 7h-6zM50 27h6l-5 7h-6z" fill="#0A0505" />
+  </g>
+  <g transform="rotate(-14 10 24)">
+    <g clip-path="url(#stick)">
+      <rect x="10" y="15" width="44" height="9" fill="#D4AF37" />
+      <path d="M14 15h6l-5 9h-6zM26 15h6l-5 9h-6zM38 15h6l-5 9h-6zM50 15h6l-5 9h-6z" fill="#0A0505" />
+    </g>
+  </g>
+  <circle cx="11.5" cy="25.5" r="2.2" fill="#D4AF37" stroke="#0A0505" stroke-width="1" />
+  <rect x="16" y="40" width="32" height="2.5" rx="1.25" fill="#D4AF37" />
+  <rect x="16" y="45.5" width="20" height="2.5" rx="1.25" fill="#D4AF37" />
+</svg>

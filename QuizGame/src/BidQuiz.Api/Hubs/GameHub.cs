@@ -2,6 +2,7 @@ using BidQuiz.Application.Abstractions.Presence;
 using BidQuiz.Application.Abstractions.Realtime;
 using BidQuiz.Application.Auth;
 using BidQuiz.Application.Auth.AdminLogin;
+using BidQuiz.Application.Auth.AdminLogout;
 using BidQuiz.Application.Auth.JoinTeam;
 using BidQuiz.Application.Auth.ResumeAdmin;
 using BidQuiz.Application.Auth.ResumeTeam;
@@ -85,6 +86,17 @@ public sealed class GameHub(
     {
         handler.Handle(new ResumeAdmin(token)).ThrowIfFailed();
         return new AdminSessionResponse(token, await AttachAdminAsync());
+    }
+
+    /// <summary>
+    /// Logs the host out: revokes the token and stops treating this connection as admin.
+    /// The game is untouched. Anyone may call it, as it only affects the caller and the token they hold.
+    /// </summary>
+    public async Task AdminLogout(string token, [FromServices] AdminLogoutHandler handler)
+    {
+        handler.Handle(new AdminLogout(token)).ThrowIfFailed();
+        Context.Items.Remove(IsAdminKey);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, AdminGroup, Aborted);
     }
 
     public async Task StartQuestion(int questionId, [FromServices] StartQuestionHandler handler)

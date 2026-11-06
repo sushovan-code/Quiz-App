@@ -1,4 +1,5 @@
 using BidQuiz.Application.Auth.AdminLogin;
+using BidQuiz.Application.Auth.AdminLogout;
 using BidQuiz.Application.Auth.JoinTeam;
 using BidQuiz.Application.Auth.ResumeAdmin;
 using BidQuiz.Application.Auth.ResumeTeam;
@@ -61,6 +62,7 @@ public static class DependencyInjection
         .AddSingleton<ResumeTeamHandler>()
         .AddSingleton<AdminLoginHandler>()
         .AddSingleton<ResumeAdminHandler>()
+        .AddSingleton<AdminLogoutHandler>()
         .AddSingleton<GetTeamSnapshotHandler>()
         .AddSingleton<GetAdminSnapshotHandler>()
         .AddSingleton<InitializeGameHandler>()
