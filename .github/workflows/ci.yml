@@ -1,0 +1,113 @@
+# Runs on every pull request to main and every push to main.
+# Needs no cloud resources, so it always runs, even when you skip deployment.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  SOLUTION: QuizGame/BidQuiz.slnx
+  WEB_DIR: QuizGame/src/web/bidquiz-web
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '10.0.x'
+
+      # The API build normally runs npm ci + ng build into wwwroot; the frontend is built in its own steps below.
+      - name: Restore
+        run: dotnet restore "$SOLUTION"
+
+      - name: Build (warnings are errors, see Directory.Build.props)
+        run: dotnet build "$SOLUTION" --no-restore --configuration Release -p:SkipClientBuild=true
+
+      - name: Check formatting and naming rules
+        run: dotnet format "$SOLUTION" --verify-no-changes --no-restore
+
+      - name: Backend unit and integration tests (in-memory and temp-file SQLite, no Docker needed)
+        run: dotnet test "$SOLUTION" --no-build --configuration Release -p:SkipClientBuild=true
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: ${{ env.WEB_DIR }}/package-lock.json
+
+      # There are no frontend unit tests yet; add `npm run test:ci` here when they land.
+      - name: Frontend install, lint, build
+        working-directory: ${{ env.WEB_DIR }}
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+  diagrams:
+    # Runs only on PRs and only when the repo has docs/diagrams.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Skip if there are no diagrams
+        id: has
+        run: echo "found=$([ -d docs/diagrams ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Fail if a diagram source changed without its image
+        if: steps.has.outputs.found == 'true'
+        shell: pwsh
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: ./scripts/check-diagrams.ps1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.has.outputs.found == 'true'
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        if: steps.has.outputs.found == 'true'
+        with:
+          python-version: '3.12'
+      - name: Install Graphviz and diagrams
+        if: steps.has.outputs.found == 'true'
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q graphviz
+          pip install diagrams
+      - name: Render every diagram (proves the sources are valid)
+        if: steps.has.outputs.found == 'true'
+        shell: pwsh
+        run: ./scripts/render-diagrams.ps1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: steps.has.outputs.found == 'true'
+        with:
+          name: diagrams
+          path: |
+            docs/diagrams/*.svg
+            docs/diagrams/*.png
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false   # PR comments would need pull-requests: write; findings still fail the job
