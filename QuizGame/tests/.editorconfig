@@ -3,3 +3,5 @@
 dotnet_diagnostic.CA1707.severity = none
 # Test classes release their resources in IAsyncLifetime.DisposeAsync, which xUnit always calls.
 dotnet_diagnostic.CA1001.severity = none
+# Test methods are named Method_State_ExpectedResult, so the Async suffix rule does not apply to them.
+dotnet_naming_rule.async_methods_end_in_async.severity = none
